@@ -3,39 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PulsePriority — Real-time transit intervention dashboard for Debrecen. Visualize hotspots, delays, and recommended actions on a live map.">
+    <meta name="description" content="PulsePriority Debrecen — A data-driven, people-weighted transit intervention system that surgically targets bottlenecks for maximum impact.">
     <title>PulsePriority | Debrecen — Live Transit Dashboard</title>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Leaflet CSS for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Animated gradient mesh background -->
+
+    <!-- Animated gradient mesh background (shared across both screens) -->
     <div id="bg-mesh" aria-hidden="true"></div>
 
-    <div id="app">
-        <!-- Sidebar for Ranked Hotspots -->
-        <aside id="sidebar">
-            <div class="header">
-                <div class="logo-mark" aria-hidden="true"></div>
-                <h1>PulsePriority</h1>
-                <p>Live Transit Interventions</p>
+    <!-- ================================================================
+         SCREEN 1: OVERVIEW / PITCH
+         ================================================================ -->
+    <div id="overview-screen">
+
+        <!-- Decorative orbital rings -->
+        <div class="hero-orbit" aria-hidden="true"></div>
+        <div class="hero-orbit" aria-hidden="true"></div>
+        <div class="hero-orbit" aria-hidden="true"></div>
+
+        <!-- ── HERO ── -->
+        <section class="hero" id="hero-section">
+            <div class="container">
+                <div class="reveal">
+                    <div class="hero-badge"><span class="dot"></span> Hackathon 2026 — Debrecen</div>
+                </div>
+                <h1 class="reveal">PulsePriority<br>Debrecen</h1>
+                <p class="hero-sub reveal">Data-Driven Breakthrough for Smarter Transit</p>
+                <p class="hero-desc reveal">Public transport in Debrecen delays <em>non-linearly</em> near capacity. PulsePriority uses open data to create dynamic, people-weighted priority bubbles at critical bottlenecks — saving human time without building costly new lanes.</p>
+                <a href="#problem" class="hero-cta reveal" id="hero-scroll-btn">
+                    See How It Works
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
             </div>
-            <div id="hotspot-list">
-                <!-- Data injected via JS -->
-                <div class="loading">
-                    <div class="loading-spinner" aria-hidden="true"></div>
-                    <span>Loading live data…</span>
+        </section>
+
+        <!-- ── THE PROBLEM ── -->
+        <section id="problem">
+            <div class="container">
+                <div class="section-label reveal"><span class="line"></span> The Problem</div>
+                <h2 class="section-heading reveal">Debrecen's Network Is<br>Approaching <span style="color: var(--accent-red);">Capacity Collapse</span></h2>
+                <p class="section-desc reveal">Public transit delay doesn't grow linearly — it <strong style="color: var(--text-primary);">explodes</strong> near capacity thresholds. A 5% rise in load can trigger a 40%+ increase in cascading delays. Traditional approaches apply blanket solutions everywhere. That's expensive and inefficient.</p>
+
+                <!-- Non-linear delay chart -->
+                <div class="glass delay-chart reveal">
+                    <div class="delay-chart-title">PT Delay vs. Network Load — Non-Linear Relationship</div>
+                    <svg viewBox="0 0 600 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="60" y1="180" x2="570" y2="180" stroke="hsla(225,15%,30%,0.3)" stroke-width="1"/>
+                        <line x1="60" y1="135" x2="570" y2="135" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                        <line x1="60" y1="90" x2="570" y2="90" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                        <line x1="60" y1="45" x2="570" y2="45" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                        <line x1="60" y1="180" x2="60" y2="30" stroke="hsla(225,15%,30%,0.3)" stroke-width="1"/>
+                        <text x="315" y="210" fill="hsla(225,10%,50%,0.8)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Network Load (%)</text>
+                        <text x="15" y="105" fill="hsla(225,10%,50%,0.8)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif" transform="rotate(-90, 15, 105)">PT Delay</text>
+                        <text x="60" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">0%</text>
+                        <text x="187" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">25%</text>
+                        <text x="315" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">50%</text>
+                        <text x="442" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">75%</text>
+                        <text x="570" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">100%</text>
+                        <path d="M60 175 C120 173, 200 170, 280 165 C340 160, 380 152, 420 130 C445 115, 465 90, 490 60 C510 38, 540 28, 570 22" stroke="url(#curveGrad)" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <path d="M60 175 C120 173, 200 170, 280 165 C340 160, 380 152, 420 130 C445 115, 465 90, 490 60 C510 38, 540 28, 570 22 L570 180 L60 180 Z" fill="url(#areaGrad)" opacity="0.25"/>
+                        <line x1="420" y1="30" x2="420" y2="180" stroke="hsla(0,85%,62%,0.4)" stroke-width="1" stroke-dasharray="6 4"/>
+                        <text x="430" y="42" fill="hsla(0,85%,62%,0.9)" font-size="10" font-weight="700" font-family="Inter, sans-serif">DANGER ZONE</text>
+                        <circle cx="420" cy="130" r="5" fill="hsl(0,85%,62%)" opacity="0.9"/>
+                        <circle cx="420" cy="130" r="12" fill="none" stroke="hsla(0,85%,62%,0.3)" stroke-width="1.5">
+                            <animate attributeName="r" values="8;16;8" dur="2s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <defs>
+                            <linearGradient id="curveGrad" x1="60" y1="0" x2="570" y2="0">
+                                <stop offset="0%" stop-color="hsl(215,100%,62%)"/>
+                                <stop offset="60%" stop-color="hsl(28,100%,62%)"/>
+                                <stop offset="100%" stop-color="hsl(0,85%,62%)"/>
+                            </linearGradient>
+                            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="hsl(215,100%,62%)" stop-opacity="0.3"/>
+                                <stop offset="100%" stop-color="hsl(0,85%,62%)" stop-opacity="0"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+
+                <!-- Stats -->
+                <div class="problem-grid reveal-stagger">
+                    <div class="glass problem-stat reveal">
+                        <div class="stat-icon red">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                        </div>
+                        <div class="stat-value" data-target="240" data-suffix="s">0s</div>
+                        <div class="stat-label">Peak Delay at Key Stops</div>
+                    </div>
+                    <div class="glass problem-stat reveal">
+                        <div class="stat-icon orange">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="stat-value" data-target="180" data-suffix="">0</div>
+                        <div class="stat-label">Passengers Affected per Event</div>
+                    </div>
+                    <div class="glass problem-stat reveal">
+                        <div class="stat-icon blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
+                        <div class="stat-value" data-target="5" data-suffix="">0</div>
+                        <div class="stat-label">Critical Bottleneck Intersections</div>
+                    </div>
                 </div>
             </div>
-        </aside>
+        </section>
 
-        <!-- Main Map Container -->
-        <main id="map"></main>
+        <!-- ── THE SOLUTION ── -->
+        <section id="solution">
+            <div class="container">
+                <div class="section-label reveal"><span class="line" style="background: var(--accent-green);"></span> The Surgical Solution</div>
+                <h2 class="section-heading reveal">People-Weighted Priority<br>at <span style="color: var(--accent-blue);">Surgical Precision</span></h2>
+
+                <div class="solution-layout">
+                    <div class="solution-text reveal">
+                        <p class="section-desc" style="margin-bottom: 8px;">Instead of building costly city-wide bus lanes, PulsePriority identifies the <strong style="color: var(--text-primary);">exact intersections</strong> where intervention yields the greatest human-time savings — and applies dynamic, targeted priority only there.</p>
+                        <ul>
+                            <li><strong>People over vehicles.</strong> A tram carrying 180 passengers scores far higher than an empty bus — delay is weighted by actual ridership.</li>
+                            <li><strong>Dynamic scoring.</strong> The Pulse Score recalculates in real-time as transit vehicles approach intersections, adapting to live conditions.</li>
+                            <li><strong>Surgical interventions.</strong> Queue-jump lanes and extended green phases deploy only at the 2–3 intersections that matter most, right now.</li>
+                            <li><strong>Congestion-aware.</strong> High car volumes lower the Pulse Score — avoiding interventions that would gridlock surrounding traffic.</li>
+                        </ul>
+                    </div>
+
+                    <!-- People-weighted infographic -->
+                    <div class="glass infographic reveal">
+                        <div class="infographic-title">People-Weighted Scoring Concept</div>
+                        <svg viewBox="0 0 340 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="90" r="55" fill="hsla(0,85%,62%,0.08)" stroke="hsla(0,85%,62%,0.2)" stroke-width="1"/>
+                            <circle cx="240" cy="90" r="30" fill="hsla(155,70%,50%,0.06)" stroke="hsla(155,70%,50%,0.15)" stroke-width="1"/>
+                            <g fill="hsl(0,85%,62%)" opacity="0.9">
+                                <circle cx="80" cy="72" r="4"/><rect x="77" y="78" width="6" height="10" rx="2"/>
+                                <circle cx="95" cy="68" r="4"/><rect x="92" y="74" width="6" height="10" rx="2"/>
+                                <circle cx="110" cy="72" r="4"/><rect x="107" y="78" width="6" height="10" rx="2"/>
+                                <circle cx="87" cy="85" r="4"/><rect x="84" y="91" width="6" height="10" rx="2"/>
+                                <circle cx="103" cy="85" r="4"/><rect x="100" y="91" width="6" height="10" rx="2"/>
+                                <circle cx="120" cy="82" r="4"/><rect x="117" y="88" width="6" height="10" rx="2"/>
+                                <circle cx="75" cy="95" r="4"/><rect x="72" y="101" width="6" height="10" rx="2"/>
+                                <circle cx="93" cy="98" r="4"/><rect x="90" y="104" width="6" height="10" rx="2"/>
+                                <circle cx="112" cy="96" r="4"/><rect x="109" y="102" width="6" height="10" rx="2"/>
+                            </g>
+                            <g fill="hsl(155,70%,50%)" opacity="0.8">
+                                <circle cx="233" cy="82" r="4"/><rect x="230" y="88" width="6" height="10" rx="2"/>
+                                <circle cx="248" cy="86" r="4"/><rect x="245" y="92" width="6" height="10" rx="2"/>
+                            </g>
+                            <text x="100" y="160" fill="hsl(0,85%,62%)" font-size="13" font-weight="800" text-anchor="middle" font-family="Inter, sans-serif">180 pax × 240s</text>
+                            <text x="100" y="176" fill="hsla(225,10%,58%,0.9)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Score: 311.7 — MODERATE</text>
+                            <text x="240" y="140" fill="hsl(155,70%,50%)" font-size="13" font-weight="800" text-anchor="middle" font-family="Inter, sans-serif">15 pax × 5s</text>
+                            <text x="240" y="156" fill="hsla(225,10%,58%,0.9)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Score: 0.56 — LOW</text>
+                            <rect x="30" y="200" width="280" height="6" rx="3" fill="hsla(225,18%,20%,0.6)"/>
+                            <rect x="30" y="200" width="238" height="6" rx="3" fill="url(#barGrad)"/>
+                            <circle cx="268" cy="203" r="8" fill="hsl(0,85%,62%)" stroke="hsl(225,25%,5%)" stroke-width="2"/>
+                            <text x="30" y="228" fill="hsla(225,10%,58%,0.7)" font-size="10" font-weight="500" font-family="Inter, sans-serif">LOW PRIORITY</text>
+                            <text x="310" y="228" fill="hsla(0,85%,62%,0.9)" font-size="10" font-weight="700" text-anchor="end" font-family="Inter, sans-serif">HIGH PRIORITY</text>
+                            <text x="170" y="94" fill="hsla(225,10%,50%,0.4)" font-size="22" text-anchor="middle" font-family="Inter, sans-serif">→</text>
+                            <defs>
+                                <linearGradient id="barGrad" x1="30" y1="0" x2="310" y2="0">
+                                    <stop offset="0%" stop-color="hsl(155,70%,50%)"/>
+                                    <stop offset="50%" stop-color="hsl(28,100%,62%)"/>
+                                    <stop offset="100%" stop-color="hsl(0,85%,62%)"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="formula-box">
+                            <div class="formula">Ps = (Passengers × Delay × Routes × Risk) / (Base + Cars × 0.1)</div>
+                            <div class="formula-label">The Pulse Score Algorithm — higher = intervene first</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── IMPACT ── -->
+        <section id="impact">
+            <div class="container">
+                <div class="section-label reveal"><span class="line" style="background: var(--accent-orange);"></span> Practical Impact</div>
+                <h2 class="section-heading reveal">Maximum Relief,<br><span style="color: var(--accent-orange);">Minimum Intervention</span></h2>
+                <p class="section-desc reveal">By targeting the bottlenecks with the highest human-delay concentration, PulsePriority delivers outsized impact from surgical, low-cost changes.</p>
+
+                <div class="value-grid reveal-stagger">
+                    <div class="glass value-card reveal">
+                        <div class="vc-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <h3>Reduced Human Delay</h3>
+                        <p>Total person-minutes of delay drop across the network as the highest-impact bottlenecks are resolved first.</p>
+                    </div>
+                    <div class="glass value-card reveal">
+                        <div class="vc-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>Increased PT Attractiveness</h3>
+                        <p>Reliable, low-delay transit becomes a genuine alternative. More riders shift from cars — a virtuous cycle.</p>
+                    </div>
+                    <div class="glass value-card reveal">
+                        <div class="vc-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
+                        </div>
+                        <h3>Surgical Efficiency</h3>
+                        <p>No expensive city-wide bus lanes. Interventions deploy at 2–3 intersections at a time, keeping costs near zero.</p>
+                    </div>
+                    <div class="glass value-card reveal">
+                        <div class="vc-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>
+                        </div>
+                        <h3>Data-Driven Decisions</h3>
+                        <p>Every intervention is justified by live sensor data and a transparent scoring formula.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── CTA: LAUNCH DASHBOARD ── -->
+        <section id="launch-section">
+            <div class="container" style="text-align: center;">
+                <div class="reveal">
+                    <div class="section-label" style="justify-content: center;"><span class="line" style="background: var(--accent-purple);"></span> See It Live</div>
+                </div>
+                <h2 class="section-heading reveal" style="text-align: center;">Ready to Explore the<br><span style="color: var(--accent-blue);">Live Dashboard</span>?</h2>
+                <p class="section-desc reveal" style="text-align: center; margin-left: auto; margin-right: auto;">Watch PulsePriority analyze Debrecen's transit network in real-time. Click below to initialize the interactive map and see every bottleneck ranked and visualized.</p>
+                <button id="launch-dashboard-btn" class="launch-btn reveal">
+                    <span class="launch-btn-text">Initialize Live Dashboard</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+        </section>
+    </div>
+
+
+    <!-- ================================================================
+         SCREEN 2: LIVE DASHBOARD (hidden until launched)
+         ================================================================ -->
+    <div id="dashboard-screen" style="display: none; opacity: 0;">
+        <div id="app">
+            <!-- Back button overlay -->
+            <button id="back-to-overview-btn" class="back-btn" title="Back to Overview">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+
+            <!-- Sidebar for Ranked Hotspots -->
+            <aside id="sidebar">
+                <div class="header">
+                    <div class="logo-mark" aria-hidden="true"></div>
+                    <h1>PulsePriority</h1>
+                    <p>Live Transit Interventions</p>
+                </div>
+                <div id="hotspot-list">
+                    <!-- Data injected via JS -->
+                    <div class="loading">
+                        <div class="loading-spinner" aria-hidden="true"></div>
+                        <span>Loading live data…</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Map Container -->
+            <main id="map"></main>
+        </div>
     </div>
 
     <!-- Leaflet JS -->
