@@ -1,0 +1,6 @@
+intersection_id,name,lat,lng,routes_served,car_volume,congestion_risk
+INT_01,Kossuth tér,47.5316,21.6247,5,1200,0.8
+INT_02,Csapó utca / Burgundi,47.5323,21.6300,3,800,0.4
+INT_03,Egyetem tér,47.5552,21.6212,4,950,0.6
+INT_04,Petőfi tér (Station),47.5209,21.6253,6,2900,0.95
+INT_05,Segner tér,47.5334,21.6151,4,2200,0.85

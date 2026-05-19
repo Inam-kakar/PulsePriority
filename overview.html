@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PulsePriority Debrecen — A data-driven, people-weighted transit intervention system that surgically targets bottlenecks for maximum impact.">
+    <title>PulsePriority Debrecen — Hackathon Pitch</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+    /* =====================================================================
+       DESIGN TOKENS
+       ===================================================================== */
+    :root {
+        /* Core palette */
+        --bg-deep:          hsl(225, 25%, 5%);
+        --bg-section:       hsl(225, 22%, 8%);
+        --surface:          hsla(225, 20%, 14%, 0.5);
+        --surface-border:   hsla(225, 18%, 28%, 0.3);
+        --surface-glow:     hsla(215, 100%, 60%, 0.08);
+
+        /* Text */
+        --text-primary:     hsl(0, 0%, 96%);
+        --text-secondary:   hsl(225, 12%, 58%);
+        --text-muted:       hsl(225, 10%, 42%);
+
+        /* Accents */
+        --accent-blue:      hsl(215, 100%, 62%);
+        --accent-blue-glow: hsla(215, 100%, 62%, 0.35);
+        --accent-orange:    hsl(28, 100%, 62%);
+        --accent-orange-glow: hsla(28, 100%, 62%, 0.3);
+        --accent-green:     hsl(155, 70%, 50%);
+        --accent-green-glow: hsla(155, 70%, 50%, 0.3);
+        --accent-red:       hsl(0, 85%, 62%);
+        --accent-red-glow:  hsla(0, 85%, 62%, 0.3);
+        --accent-purple:    hsl(265, 80%, 65%);
+
+        /* Glass */
+        --glass-blur:       24px;
+        --glass-sat:        180%;
+
+        /* Typography */
+        --font:             'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+        /* Radius */
+        --radius:           16px;
+        --radius-sm:        10px;
+
+        /* Transitions */
+        --ease:             cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+
+    /* =====================================================================
+       RESET & BASE
+       ===================================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+    }
+
+    body {
+        font-family: var(--font);
+        background: var(--bg-deep);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        line-height: 1.6;
+    }
+
+
+    /* =====================================================================
+       ANIMATED BACKGROUND
+       ===================================================================== */
+    .bg-mesh {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(ellipse 55% 45% at 10% 15%, hsla(215, 100%, 55%, 0.10) 0%, transparent 55%),
+            radial-gradient(ellipse 45% 50% at 90% 75%, hsla(28, 100%, 55%, 0.07) 0%, transparent 55%),
+            radial-gradient(ellipse 60% 35% at 50% 50%, hsla(265, 80%, 55%, 0.05) 0%, transparent 50%);
+        animation: meshDrift 25s ease-in-out infinite alternate;
+    }
+    @keyframes meshDrift {
+        0%   { transform: scale(1)   translate(0, 0); }
+        50%  { transform: scale(1.1) translate(-2%, 4%); }
+        100% { transform: scale(1)   translate(3%, -2%); }
+    }
+
+    /* Grain texture overlay */
+    .bg-mesh::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        opacity: 0.5;
+    }
+
+
+    /* =====================================================================
+       SHARED LAYOUT
+       ===================================================================== */
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 32px;
+    }
+
+    section {
+        position: relative;
+        z-index: 1;
+        padding: 100px 0;
+    }
+
+    /* Divider line between sections */
+    section + section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(60%, 500px);
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--surface-border), transparent);
+    }
+
+
+    /* =====================================================================
+       SCROLL-REVEAL ANIMATIONS
+       ===================================================================== */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Stagger children */
+    .reveal-stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
+    .reveal-stagger > .reveal:nth-child(2) { transition-delay: 100ms; }
+    .reveal-stagger > .reveal:nth-child(3) { transition-delay: 200ms; }
+    .reveal-stagger > .reveal:nth-child(4) { transition-delay: 300ms; }
+    .reveal-stagger > .reveal:nth-child(5) { transition-delay: 400ms; }
+    .reveal-stagger > .reveal:nth-child(6) { transition-delay: 500ms; }
+
+
+    /* =====================================================================
+       GLASS PANEL
+       ===================================================================== */
+    .glass {
+        background: var(--surface);
+        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius);
+        position: relative;
+    }
+
+    /* Top shimmer edge */
+    .glass::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, hsla(0,0%,100%,0.08) 50%, transparent 100%);
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+
+    /* =====================================================================
+       SECTION: HERO
+       ===================================================================== */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 60px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 100px;
+        background: hsla(215, 100%, 62%, 0.08);
+        border: 1px solid hsla(215, 100%, 62%, 0.2);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent-blue);
+        margin-bottom: 32px;
+    }
+    .hero-badge .dot {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--accent-blue-glow); }
+        50%      { opacity: 0.6; box-shadow: 0 0 0 8px transparent; }
+    }
+
+    .hero h1 {
+        font-size: clamp(40px, 6vw, 72px);
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+        margin-bottom: 24px;
+        background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-blue) 70%, var(--accent-purple) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-sub {
+        font-size: clamp(16px, 2vw, 20px);
+        font-weight: 400;
+        color: var(--text-secondary);
+        max-width: 620px;
+        margin: 0 auto 48px;
+        line-height: 1.65;
+    }
+
+    .hero-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-radius: 100px;
+        background: linear-gradient(135deg, var(--accent-blue), hsl(240, 80%, 60%));
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+        transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+        box-shadow: 0 4px 24px var(--accent-blue-glow);
+    }
+    .hero-cta:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 40px var(--accent-blue-glow);
+    }
+    .hero-cta svg { transition: transform 0.3s var(--ease); }
+    .hero-cta:hover svg { transform: translateX(4px); }
+
+    /* Decorative orbital rings */
+    .hero-orbit {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid hsla(215, 100%, 62%, 0.06);
+        pointer-events: none;
+        animation: orbit-spin 40s linear infinite;
+    }
+    .hero-orbit:nth-child(1) { width: 500px; height: 500px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .hero-orbit:nth-child(2) { width: 700px; height: 700px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-duration: 55s; animation-direction: reverse; border-color: hsla(28, 100%, 62%, 0.04); }
+    .hero-orbit:nth-child(3) { width: 900px; height: 900px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-duration: 70s; border-color: hsla(265, 80%, 65%, 0.03); }
+    @keyframes orbit-spin {
+        to { transform: translate(-50%,-50%) rotate(360deg); }
+    }
+
+
+    /* =====================================================================
+       SECTION: THE PROBLEM
+       ===================================================================== */
+    .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+    .section-label .line {
+        width: 28px; height: 2px;
+        background: var(--accent-blue);
+        border-radius: 1px;
+    }
+
+    .section-heading {
+        font-size: clamp(28px, 4vw, 44px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin-bottom: 20px;
+    }
+
+    .section-desc {
+        font-size: 16px;
+        color: var(--text-secondary);
+        max-width: 640px;
+        line-height: 1.7;
+        margin-bottom: 48px;
+    }
+
+    /* Non-linear delay chart */
+    .delay-chart {
+        padding: 40px;
+        overflow: hidden;
+    }
+    .delay-chart-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 24px;
+    }
+    .delay-chart svg {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Problem stat cards */
+    .problem-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 32px;
+    }
+    .problem-stat {
+        padding: 28px 24px;
+        text-align: center;
+    }
+    .problem-stat .stat-icon {
+        width: 48px; height: 48px;
+        margin: 0 auto 16px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .problem-stat .stat-icon.red    { background: var(--accent-red-glow); color: var(--accent-red); }
+    .problem-stat .stat-icon.orange { background: var(--accent-orange-glow); color: var(--accent-orange); }
+    .problem-stat .stat-icon.blue   { background: var(--accent-blue-glow); color: var(--accent-blue); }
+
+    .problem-stat .stat-value {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .problem-stat .stat-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+
+
+    /* =====================================================================
+       SECTION: THE SOLUTION — Infographic
+       ===================================================================== */
+    .solution-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: center;
+    }
+    @media (max-width: 768px) {
+        .solution-layout { grid-template-columns: 1fr; }
+    }
+
+    .solution-text ul {
+        list-style: none;
+        margin-top: 24px;
+    }
+    .solution-text li {
+        position: relative;
+        padding: 12px 0 12px 32px;
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        border-bottom: 1px solid hsla(225, 18%, 28%, 0.15);
+    }
+    .solution-text li:last-child { border-bottom: none; }
+    .solution-text li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        box-shadow: 0 0 12px var(--accent-blue-glow);
+    }
+    .solution-text li strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* Infographic — people bubbles */
+    .infographic {
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+    }
+    .infographic-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .infographic svg { width: 100%; max-width: 380px; height: auto; }
+
+    /* Formula display */
+    .formula-box {
+        width: 100%;
+        padding: 20px 24px;
+        border-radius: var(--radius-sm);
+        background: hsla(215, 100%, 62%, 0.06);
+        border: 1px solid hsla(215, 100%, 62%, 0.15);
+        text-align: center;
+    }
+    .formula-box .formula {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        letter-spacing: 0.02em;
+    }
+    .formula-box .formula-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 6px;
+    }
+
+
+    /* =====================================================================
+       SECTION: IMPACT — Value Cards
+       ===================================================================== */
+    .value-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+    .value-card {
+        padding: 32px 28px;
+        transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+    }
+    .value-card:hover {
+        transform: translateY(-4px);
+    }
+    .value-card .vc-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        font-size: 20px;
+    }
+    .value-card:nth-child(1) .vc-icon { background: var(--accent-blue-glow); color: var(--accent-blue); }
+    .value-card:nth-child(2) .vc-icon { background: var(--accent-green-glow); color: var(--accent-green); }
+    .value-card:nth-child(3) .vc-icon { background: var(--accent-orange-glow); color: var(--accent-orange); }
+    .value-card:nth-child(4) .vc-icon { background: hsla(265, 80%, 65%, 0.25); color: var(--accent-purple); }
+
+    .value-card:nth-child(1):hover { box-shadow: 0 8px 40px var(--accent-blue-glow); }
+    .value-card:nth-child(2):hover { box-shadow: 0 8px 40px var(--accent-green-glow); }
+    .value-card:nth-child(3):hover { box-shadow: 0 8px 40px var(--accent-orange-glow); }
+    .value-card:nth-child(4):hover { box-shadow: 0 8px 40px hsla(265, 80%, 65%, 0.2); }
+
+    .value-card h3 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: 8px;
+    }
+    .value-card p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.65;
+    }
+
+
+    /* =====================================================================
+       SECTION: TECH STACK
+       ===================================================================== */
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    .tech-card {
+        padding: 28px 24px;
+        text-align: center;
+        transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    }
+    .tech-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 30px var(--surface-glow);
+    }
+    .tech-card .tc-icon {
+        font-size: 28px;
+        margin-bottom: 14px;
+        display: block;
+    }
+    .tech-card h4 {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: -0.01em;
+    }
+    .tech-card p {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    /* Data pipeline */
+    .pipeline {
+        margin-top: 48px;
+        padding: 32px;
+    }
+    .pipeline-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    .pipeline-flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .pipeline-node {
+        padding: 10px 20px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+    }
+    .pipeline-node.data  { background: hsla(215, 100%, 62%, 0.12); color: var(--accent-blue); border: 1px solid hsla(215, 100%, 62%, 0.2); }
+    .pipeline-node.proc  { background: hsla(265, 80%, 65%, 0.12); color: var(--accent-purple); border: 1px solid hsla(265, 80%, 65%, 0.2); }
+    .pipeline-node.out   { background: hsla(155, 70%, 50%, 0.12); color: var(--accent-green); border: 1px solid hsla(155, 70%, 50%, 0.2); }
+    .pipeline-arrow {
+        color: var(--text-muted);
+        font-size: 18px;
+        opacity: 0.4;
+    }
+
+
+    /* =====================================================================
+       FOOTER
+       ===================================================================== */
+    .footer {
+        position: relative;
+        z-index: 1;
+        padding: 48px 0;
+        text-align: center;
+        border-top: 1px solid var(--surface-border);
+    }
+    .footer p {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .footer .footer-brand {
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+
+    /* =====================================================================
+       RESPONSIVE
+       ===================================================================== */
+    @media (max-width: 600px) {
+        section { padding: 64px 0; }
+        .container { padding: 0 20px; }
+        .problem-grid, .value-grid, .tech-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<div class="bg-mesh" aria-hidden="true"></div>
+
+<!-- Decorative orbit rings behind hero -->
+<div class="hero-orbit" aria-hidden="true"></div>
+<div class="hero-orbit" aria-hidden="true"></div>
+<div class="hero-orbit" aria-hidden="true"></div>
+
+<!-- ================================================================
+     HERO
+     ================================================================ -->
+<section class="hero">
+    <div class="container">
+        <div class="reveal">
+            <div class="hero-badge"><span class="dot"></span> Hackathon 2026 — Debrecen</div>
+        </div>
+        <h1 class="reveal">PulsePriority<br>Debrecen</h1>
+        <p class="hero-sub reveal">A data-driven breakthrough for smarter transit. We surgically target the bottlenecks that matter most — weighted by <em>people</em>, not vehicles — to unlock maximum network relief with minimal intervention.</p>
+        <a href="#problem" class="hero-cta reveal">
+            See How It Works
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     THE PROBLEM
+     ================================================================ -->
+<section id="problem">
+    <div class="container">
+        <div class="section-label reveal"><span class="line"></span> The Problem</div>
+        <h2 class="section-heading reveal">Debrecen's Network Is<br>Approaching <span style="color: var(--accent-red);">Capacity Collapse</span></h2>
+        <p class="section-desc reveal">Public transit delay doesn't grow linearly — it <strong style="color: var(--text-primary);">explodes</strong> near capacity thresholds. A 5% rise in load can trigger a 40%+ increase in cascading delays across intersecting routes. Traditional approaches apply blanket solutions everywhere. That's expensive and inefficient.</p>
+
+        <!-- Non-linear delay curve -->
+        <div class="glass delay-chart reveal">
+            <div class="delay-chart-title">PT Delay vs. Network Load — Non-Linear Relationship</div>
+            <svg viewBox="0 0 600 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Grid lines -->
+                <line x1="60" y1="180" x2="570" y2="180" stroke="hsla(225,15%,30%,0.3)" stroke-width="1"/>
+                <line x1="60" y1="135" x2="570" y2="135" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                <line x1="60" y1="90" x2="570" y2="90" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                <line x1="60" y1="45" x2="570" y2="45" stroke="hsla(225,15%,30%,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+                <line x1="60" y1="180" x2="60" y2="30" stroke="hsla(225,15%,30%,0.3)" stroke-width="1"/>
+                <!-- Axis labels -->
+                <text x="315" y="210" fill="hsla(225,10%,50%,0.8)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Network Load (%)</text>
+                <text x="15" y="105" fill="hsla(225,10%,50%,0.8)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif" transform="rotate(-90, 15, 105)">PT Delay</text>
+                <!-- Load labels -->
+                <text x="60" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">0%</text>
+                <text x="187" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">25%</text>
+                <text x="315" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">50%</text>
+                <text x="442" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">75%</text>
+                <text x="570" y="197" fill="hsla(225,10%,42%,0.6)" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">100%</text>
+                <!-- Exponential delay curve -->
+                <path d="M60 175 C120 173, 200 170, 280 165 C340 160, 380 152, 420 130 C445 115, 465 90, 490 60 C510 38, 540 28, 570 22"
+                      stroke="url(#curveGrad)" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <!-- Area under curve -->
+                <path d="M60 175 C120 173, 200 170, 280 165 C340 160, 380 152, 420 130 C445 115, 465 90, 490 60 C510 38, 540 28, 570 22 L570 180 L60 180 Z"
+                      fill="url(#areaGrad)" opacity="0.25"/>
+                <!-- Danger zone marker -->
+                <line x1="420" y1="30" x2="420" y2="180" stroke="hsla(0,85%,62%,0.4)" stroke-width="1" stroke-dasharray="6 4"/>
+                <text x="430" y="42" fill="hsla(0,85%,62%,0.9)" font-size="10" font-weight="700" font-family="Inter, sans-serif">DANGER ZONE</text>
+                <!-- Critical point glow -->
+                <circle cx="420" cy="130" r="5" fill="hsl(0,85%,62%)" opacity="0.9"/>
+                <circle cx="420" cy="130" r="12" fill="none" stroke="hsla(0,85%,62%,0.3)" stroke-width="1.5">
+                    <animate attributeName="r" values="8;16;8" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <defs>
+                    <linearGradient id="curveGrad" x1="60" y1="0" x2="570" y2="0">
+                        <stop offset="0%" stop-color="hsl(215,100%,62%)"/>
+                        <stop offset="60%" stop-color="hsl(28,100%,62%)"/>
+                        <stop offset="100%" stop-color="hsl(0,85%,62%)"/>
+                    </linearGradient>
+                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="hsl(215,100%,62%)" stop-opacity="0.3"/>
+                        <stop offset="100%" stop-color="hsl(0,85%,62%)" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- Stats row -->
+        <div class="problem-grid reveal-stagger">
+            <div class="glass problem-stat reveal">
+                <div class="stat-icon red">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 8v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                </div>
+                <div class="stat-value" data-target="240" data-suffix="s">0s</div>
+                <div class="stat-label">Peak Delay at Key Stops</div>
+            </div>
+            <div class="glass problem-stat reveal">
+                <div class="stat-icon orange">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="stat-value" data-target="180" data-suffix="">0</div>
+                <div class="stat-label">Passengers Affected per Event</div>
+            </div>
+            <div class="glass problem-stat reveal">
+                <div class="stat-icon blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+                <div class="stat-value" data-target="5" data-suffix="">0</div>
+                <div class="stat-label">Critical Bottleneck Intersections</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     THE SOLUTION
+     ================================================================ -->
+<section id="solution">
+    <div class="container">
+        <div class="section-label reveal"><span class="line" style="background: var(--accent-green);"></span> The Surgical Solution</div>
+        <h2 class="section-heading reveal">People-Weighted Priority<br>at <span style="color: var(--accent-blue);">Surgical Precision</span></h2>
+
+        <div class="solution-layout">
+            <div class="solution-text reveal">
+                <p class="section-desc" style="margin-bottom: 8px;">Instead of building costly city-wide bus lanes, PulsePriority identifies the <strong style="color: var(--text-primary);">exact intersections</strong> where intervention yields the greatest human-time savings — and applies dynamic, targeted priority only there.</p>
+                <ul>
+                    <li><strong>People over vehicles.</strong> A tram carrying 180 passengers scores far higher than an empty bus — delay is weighted by actual ridership.</li>
+                    <li><strong>Dynamic scoring.</strong> The Pulse Score recalculates in real-time as transit vehicles approach intersections, adapting to live conditions.</li>
+                    <li><strong>Surgical interventions.</strong> Queue-jump lanes and extended green phases deploy only at the 2–3 intersections that matter most, right now.</li>
+                    <li><strong>Congestion-aware.</strong> High car volumes at an intersection lower the Pulse Score — avoiding interventions that would gridlock surrounding traffic.</li>
+                </ul>
+            </div>
+
+            <!-- People-weighted infographic -->
+            <div class="glass infographic reveal">
+                <div class="infographic-title">People-Weighted Scoring Concept</div>
+                <svg viewBox="0 0 340 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background circles representing intersections -->
+                    <circle cx="100" cy="90" r="55" fill="hsla(0,85%,62%,0.08)" stroke="hsla(0,85%,62%,0.2)" stroke-width="1"/>
+                    <circle cx="240" cy="90" r="30" fill="hsla(155,70%,50%,0.06)" stroke="hsla(155,70%,50%,0.15)" stroke-width="1"/>
+
+                    <!-- People icons — large cluster (critical) -->
+                    <g fill="hsl(0,85%,62%)" opacity="0.9">
+                        <circle cx="80" cy="72" r="4"/><rect x="77" y="78" width="6" height="10" rx="2"/>
+                        <circle cx="95" cy="68" r="4"/><rect x="92" y="74" width="6" height="10" rx="2"/>
+                        <circle cx="110" cy="72" r="4"/><rect x="107" y="78" width="6" height="10" rx="2"/>
+                        <circle cx="87" cy="85" r="4"/><rect x="84" y="91" width="6" height="10" rx="2"/>
+                        <circle cx="103" cy="85" r="4"/><rect x="100" y="91" width="6" height="10" rx="2"/>
+                        <circle cx="120" cy="82" r="4"/><rect x="117" y="88" width="6" height="10" rx="2"/>
+                        <circle cx="75" cy="95" r="4"/><rect x="72" y="101" width="6" height="10" rx="2"/>
+                        <circle cx="93" cy="98" r="4"/><rect x="90" y="104" width="6" height="10" rx="2"/>
+                        <circle cx="112" cy="96" r="4"/><rect x="109" y="102" width="6" height="10" rx="2"/>
+                    </g>
+
+                    <!-- People icons — small cluster (low) -->
+                    <g fill="hsl(155,70%,50%)" opacity="0.8">
+                        <circle cx="233" cy="82" r="4"/><rect x="230" y="88" width="6" height="10" rx="2"/>
+                        <circle cx="248" cy="86" r="4"/><rect x="245" y="92" width="6" height="10" rx="2"/>
+                    </g>
+
+                    <!-- Labels -->
+                    <text x="100" y="160" fill="hsl(0,85%,62%)" font-size="13" font-weight="800" text-anchor="middle" font-family="Inter, sans-serif">180 pax × 240s</text>
+                    <text x="100" y="176" fill="hsla(225,10%,58%,0.9)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Score: 311.7 — MODERATE</text>
+
+                    <text x="240" y="140" fill="hsl(155,70%,50%)" font-size="13" font-weight="800" text-anchor="middle" font-family="Inter, sans-serif">15 pax × 5s</text>
+                    <text x="240" y="156" fill="hsla(225,10%,58%,0.9)" font-size="11" font-weight="500" text-anchor="middle" font-family="Inter, sans-serif">Score: 0.56 — LOW</text>
+
+                    <!-- Bottom comparison bar -->
+                    <rect x="30" y="200" width="280" height="6" rx="3" fill="hsla(225,18%,20%,0.6)"/>
+                    <rect x="30" y="200" width="238" height="6" rx="3" fill="url(#barGrad)"/>
+                    <circle cx="268" cy="203" r="8" fill="hsl(0,85%,62%)" stroke="hsl(225,25%,5%)" stroke-width="2"/>
+
+                    <text x="30" y="228" fill="hsla(225,10%,58%,0.7)" font-size="10" font-weight="500" font-family="Inter, sans-serif">LOW PRIORITY</text>
+                    <text x="310" y="228" fill="hsla(0,85%,62%,0.9)" font-size="10" font-weight="700" text-anchor="end" font-family="Inter, sans-serif">HIGH PRIORITY</text>
+
+                    <!-- Arrow between clusters -->
+                    <text x="170" y="94" fill="hsla(225,10%,50%,0.4)" font-size="22" text-anchor="middle" font-family="Inter, sans-serif">→</text>
+
+                    <defs>
+                        <linearGradient id="barGrad" x1="30" y1="0" x2="310" y2="0">
+                            <stop offset="0%" stop-color="hsl(155,70%,50%)"/>
+                            <stop offset="50%" stop-color="hsl(28,100%,62%)"/>
+                            <stop offset="100%" stop-color="hsl(0,85%,62%)"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <div class="formula-box">
+                    <div class="formula">Ps = (Passengers × Delay × Routes × Risk) / (Base + Cars × 0.1)</div>
+                    <div class="formula-label">The Pulse Score Algorithm — higher = intervene first</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     PRACTICAL VALUE
+     ================================================================ -->
+<section id="impact">
+    <div class="container">
+        <div class="section-label reveal"><span class="line" style="background: var(--accent-orange);"></span> Practical Impact</div>
+        <h2 class="section-heading reveal">Maximum Relief,<br><span style="color: var(--accent-orange);">Minimum Intervention</span></h2>
+        <p class="section-desc reveal">By targeting the bottlenecks with the highest human-delay concentration, PulsePriority delivers outsized impact from surgical, low-cost changes.</p>
+
+        <div class="value-grid reveal-stagger">
+            <div class="glass value-card reveal">
+                <div class="vc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <h3>Reduced Human Delay</h3>
+                <p>Total person-minutes of delay drop across the network as the highest-impact bottlenecks are resolved first, freeing cascading downstream routes.</p>
+            </div>
+            <div class="glass value-card reveal">
+                <div class="vc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <h3>Increased PT Attractiveness</h3>
+                <p>Reliable, low-delay public transit becomes a genuine alternative. More riders shift from cars, reducing congestion for everyone — a virtuous cycle.</p>
+            </div>
+            <div class="glass value-card reveal">
+                <div class="vc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="10"/></svg>
+                </div>
+                <h3>Surgical Efficiency</h3>
+                <p>No expensive city-wide bus lanes. Interventions deploy at 2–3 intersections at a time, keeping infrastructure costs near zero while maximizing throughput.</p>
+            </div>
+            <div class="glass value-card reveal">
+                <div class="vc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg>
+                </div>
+                <h3>Data-Driven Decisions</h3>
+                <p>Every intervention is justified by live sensor data and a transparent scoring formula. Decision-makers see exactly <em>why</em> each bottleneck was prioritized.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     TECH STACK & DATA
+     ================================================================ -->
+<section id="tech">
+    <div class="container">
+        <div class="section-label reveal"><span class="line" style="background: var(--accent-purple);"></span> Technology & Data</div>
+        <h2 class="section-heading reveal">Built for <span style="color: var(--accent-purple);">Real-Time</span></h2>
+        <p class="section-desc reveal">A lean, modern stack designed for rapid prototyping with live data integration capabilities.</p>
+
+        <div class="tech-grid reveal-stagger">
+            <div class="glass tech-card reveal">
+                <span class="tc-icon">🐍</span>
+                <h4>Python + FastAPI</h4>
+                <p>Async-ready backend serving the Pulse Score engine with sub-50ms response times.</p>
+            </div>
+            <div class="glass tech-card reveal">
+                <span class="tc-icon">📊</span>
+                <h4>Pandas + NumPy</h4>
+                <p>Vectorized scoring calculations across all intersections in a single pass.</p>
+            </div>
+            <div class="glass tech-card reveal">
+                <span class="tc-icon">🗺️</span>
+                <h4>Leaflet + Vanilla JS</h4>
+                <p>Interactive dark-mode map with glassmorphic UI. Zero framework overhead.</p>
+            </div>
+            <div class="glass tech-card reveal">
+                <span class="tc-icon">📡</span>
+                <h4>EnCLOD Open Data</h4>
+                <p>EU open transport & sensor datasets powering intersection-level intelligence.</p>
+            </div>
+        </div>
+
+        <div class="glass pipeline reveal">
+            <div class="pipeline-title">Data Pipeline</div>
+            <div class="pipeline-flow">
+                <span class="pipeline-node data">EnCLOD Sensors</span>
+                <span class="pipeline-arrow">→</span>
+                <span class="pipeline-node data">Transit Feed (CSV)</span>
+                <span class="pipeline-arrow">→</span>
+                <span class="pipeline-node proc">Pulse Score Engine</span>
+                <span class="pipeline-arrow">→</span>
+                <span class="pipeline-node proc">FastAPI</span>
+                <span class="pipeline-arrow">→</span>
+                <span class="pipeline-node out">Live Dashboard</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-brand reveal">PulsePriority</div>
+        <p class="reveal">Data-driven transit intervention for Debrecen · Hackathon 2026</p>
+    </div>
+</footer>
+
+
+<!-- ================================================================
+     SCRIPTS — Scroll Reveal + Counter Animation
+     ================================================================ -->
+<script>
+(function () {
+    'use strict';
+
+    // --- Scroll-triggered reveal via IntersectionObserver ---
+    const revealElements = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);  // fire once
+            }
+        });
+    }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+    });
+
+    revealElements.forEach(el => observer.observe(el));
+
+
+    // --- Animated number counters ---
+    const counterElements = document.querySelectorAll('[data-target]');
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    counterElements.forEach(el => counterObserver.observe(el));
+
+    function animateCounter(el) {
+        const target = parseInt(el.dataset.target, 10);
+        const suffix = el.dataset.suffix || '';
+        const duration = 1600;
+        const start = performance.now();
+
+        function update(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease-out expo
+            const eased = 1 - Math.pow(1 - progress, 4);
+            const current = Math.round(eased * target);
+            el.textContent = current + suffix;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+    }
+
+
+    // --- Smooth scroll for CTA ---
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+})();
+</script>
+</body>
+</html>

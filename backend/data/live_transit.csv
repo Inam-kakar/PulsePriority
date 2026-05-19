@@ -1,0 +1,6 @@
+vehicle_id,intersection_id,passenger_count,delay_seconds
+Tram_1,INT_01,120,85
+Bus_22,INT_02,15,5
+Bus_10,INT_03,45,30
+Tram_2,INT_04,180,240
+Bus_24,INT_05,110,120

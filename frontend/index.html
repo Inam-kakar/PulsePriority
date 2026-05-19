@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PulsePriority — Real-time transit intervention dashboard for Debrecen. Visualize hotspots, delays, and recommended actions on a live map.">
+    <title>PulsePriority | Debrecen — Live Transit Dashboard</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated gradient mesh background -->
+    <div id="bg-mesh" aria-hidden="true"></div>
+
+    <div id="app">
+        <!-- Sidebar for Ranked Hotspots -->
+        <aside id="sidebar">
+            <div class="header">
+                <div class="logo-mark" aria-hidden="true"></div>
+                <h1>PulsePriority</h1>
+                <p>Live Transit Interventions</p>
+            </div>
+            <div id="hotspot-list">
+                <!-- Data injected via JS -->
+                <div class="loading">
+                    <div class="loading-spinner" aria-hidden="true"></div>
+                    <span>Loading live data…</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Map Container -->
+        <main id="map"></main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
