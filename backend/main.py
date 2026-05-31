@@ -10,14 +10,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-@app.get("/api/hotspots")
-def get_hotspots():
-    """Returns the ranked list of transit bottlenecks in Debrecen."""
-    data = calculate_pulse_scores()
-    return {"status": "success", "data": data}
 
 
 @app.get("/api/hotspots")
