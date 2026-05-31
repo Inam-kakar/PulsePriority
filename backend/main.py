@@ -20,3 +20,8 @@ def get_hotspots():
     return {"status": "success", "data": data}
 
 
+@app.get("/api/hotspots")
+def get_hotspots():
+    """Returns the ranked list of transit bottlenecks in Debrecen."""
+    data = calculate_pulse_scores()
+    return {"status": "success", "data": data}
