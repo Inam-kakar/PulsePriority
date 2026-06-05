@@ -1,7 +1,7 @@
 // ========================================================================
 //  PulsePriority — SPA Controller
 //  Handles screen transitions, deferred Leaflet init, data fetching,
-//  card rendering with staggered animations, and map interaction.
+//  card rendering with staggered animations, and map interacti
 // ========================================================================
 
 (function () {
